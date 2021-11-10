@@ -1,0 +1,290 @@
+**********1***Templates*****		   #В - viceversa
+					   
+templates                                  #Создаём папку
+home.html				   #Создаём файл в этой папке
+
+********2****settihgs.py*****             # в файле- settihgs.py 
+'templates'				  #находим раздел TEMPLATES
+					  #он содержит лист DIRS- в нём мы указываем все места, в которых
+					  #Джанго должен искать шаблоны
+					  #указываем нашу созданную директорию 'templates' в кавычках
+
+**********3*****views.py*****		  #изменим нашу функцию home,чтобы на странице выводился текст 
+					  #из файла home.html Для этого импортируем функцию render
+from django.http import HttpResponse      #1
+from django.shortcuts import render       #2
+					  #затем в return вызываем эту функцию и передаём в неё два параметра
+
+def about(request):			    #5    #первый - request, 
+  return HttpResponse('This is about page') #6	#второй -имя html файла - 'home.html'
+
+
+def home(request):			  #9
+   return render(request, 'home.html')    #10
+
+***********4*****HTML*******
+https://html5book.ru/osnovy-html/ -ссылка на документацию
+
+Основы сод осн прав яз,опис структуры стр,отнош в структ док-та между эл-тами
+Док.-обычн текст док с расшир. html
+Сост из дерева -эл-тов и текста.Кажд эл.обозн начальным(отрывающим) и 
+конечным(закрывающим) тегом(за редким исключением)
+Нач.тег показ где начин эл,конечн-где заканч.Закр обр пут доб слэша/перед именем тэга
+<имя тэга>...</имя тэга> Между нач и закр тзгами нах сод эл-контент
+Эл предст одиночн тэгами не могут хранить в себе содержимое напрямую,оно пропис как 
+знач атрибута,напр,эл <input tupe="button"value="Кнопка"> создаст кнопку с текстом 
+Кнопка внутри
+
+********5****home.html******    #В файле home.html
+<h1>My home</h1>		#1 #используем простой тэг h1
+				#в котором заключим наш текст
+********6****Результат*****
+My home
+
+******7*****views.py*******
+Изменим функцию render,добавив передачу в него третьего параметра.
+В качестве него может быть передан словарь,который заключается в {}.
+В качестве ключа передадим greeting,в кач знач для него Hello
+
+def home(request):						     #9
+    return render(request, 'home.html'), ({'greeting': 'Hello'})     #10 
+
+*********8***home.html******
+Укажем ключ в двух парах фигурных скобок {{ }}
+<h1>My home</h1>						#1
+{{greeting}}							#2
+
+*******9***urls.py*********
+Для того,чтобы на главной странице у нас отображалась страница
+home.html Изменим путь,оставив просто пустые кавычки
+
+urlpatterns = [							#20
+    path('admin/', admin.site.urls),				#21
+    path('about/', views.about),				#22
+    path('', views.home),					#23								
+]								#24								
+								
+*******10***Изменить файл home.html******								
+Your_name - тэг h1
+Для прямоугольника исп. тэг - textarea
+Для кнопки используйте либо тзг - button, либо <input type="submit" 
+
+*************11***Решение***
+<h1>Your_name</h1>							#1
+<form>									#2
+	<textarea cols="50" rows="10" name="usertext"></texstarea>	#3
+	<br><br>							#4
+	<input type="submit" value="Reverse!">				#5
+</form>									#6
+***********12***urls.py*******
+Добавим новый путь reverse/ и привяжем к нему функцию reverse 
+urlpatterns = [								#20
+    path('admin/', admin.site.urls),					#21
+    path('about/', views.about),					#22
+    path('', views.home),						#23
+    path('reverse/', views.reverse),					#24
+]									#25
+
+*********13***views.py*******
+Добавим функцию reverse.В функции render будем возвращать 
+новую html страницу revers.html
+
+def reverse(request):							#13
+    return render(request,'revers.html')				#14
+
+********14***home.html******
+В форме добавим атрибут action и укажем путь, по которому будем 
+перенаправлены, если кнопка submit будет нажата
+
+<h1>Your_name</h1>							#1
+<form action="reverse">							#2
+	<textarea cols="50" rows="10" name="usertext"></texstarea>	#3
+	<br><br>							#4
+	<input type="submit" value="Reverse!">				#5
+</form>									#6
+Но подход, когда мы используем здесь путь URL не очень хорош,потому что
+если мы по какой то причине  в urls.py захотим изменить путь на другой,
+то получим ошибку: Page not found 
+
+********15***urls.py*******
+К path revers укажем ещё один параметр name,по которому в дальнейшем 
+мы сможем обращаться к данному пути
+urlpatterns = [								#20
+    path('admin/', admin.site.urls),					#21
+    path('about/', views.about),					#22
+    path('', views.home),						#23
+    path('reverse/', views.reverse, name = 'reverse'),			#24
+] 									№25
+
+**********16***home.html******
+Используем другой подход. В action напишем {%url reverse%}
+Указываем url и имя url.
+Теперь ссылка будет работать с именем, присвоенным на 
+предыдущем слайде
+
+<h1>Your_name</h1>							#1
+<form action="{% url 'reverse'%}">					#2
+	<textarea cols="50" rows="10" name="usertext"></texstarea>	#3
+	<br><br>							#4
+	<input type="submit" value="Reverse!">				#5
+</form>									#6
+
+
+**********17***Отправим текст Hello World!******
+Внимательно посмотрим на путь URL в браузере после перенаправления:
+127.0.0.1:8000/revers/?usertext=Hello+World%21
+
+%21 - код восклицательного знака
+usertext = Hello + World - пара ключ и его значение, добавлены при помощи 
+метода GET в форме, которая является дефолтным методом для любого элемента формы
+
+*********18***home.html********
+Элемент usertext является именем нашей textarea.Именно по этому имени каждый раз,
+когда пользователь вводит какой то текст и нажимает кнопку,мы получаем этот ключ в
+URL и значение по этому ключу,которое ввёл пользователь
+
+<h1>Your_name</h1>									#1
+<form action="{% url 'reverse'%}">							#2			
+	<textarea cols="50" rows="10" name="usertext"></texstarea>			#3
+	<br><br>									#4
+	<input type="submit" value="Reverse!">						#5
+</form>											#6
+
+******************19***views.py**************
+Теперь получим информацию из url, чтобы вывести её на страницу.
+Для этого воспользуемся request. Request имеет большое количество информации:с какого 
+компьютера пришёл пользователь, какая операционная система используется и т.д.
+Чтобы получить ту информацию, которая нам нужна мы должны написать:request.GET[],где в 
+квадратных скобаках укажем ключ параметра,который мы ищем. Для вывода на страницу 
+передадим в функцию render третий параметр в форме словаря.Создадим ключ, по которому 
+сможем получать user_text
+def reverse(request):							#13
+  user_text = request.GET['usertext']					#14
+  return render(request, 'reverse.html', {'usertext':user_text})	#15
+
+**********20***reverse.html***************
+Укажем название ключа
+<h1>Reversed Text</h1>							#1
+									#2							
+{{usertext}}								#3
+
+*********21***Результат*******************в интернете на сайте
+Reversed Text
+
+Hello World!
+
+*******22***views.py******************
+Перевернём текст
+def reverse(request):			#13
+    user_text = request.GET['usertext']	#14
+    reversed_text = user_text[::-1]	#15
+    return render(request,'reverse.html',{usertext' :user_text,'reversedtext':reversed	#16
+******22*2***reverse.html***********
+Добавим ещё одно имя ключа
+<h1>Original Text</h1>			#1
+					#2
+{{usertext}}				#3
+					#4
+<h1>Reversed Text</h1>			#5
+					#6
+{{reversedtext}}			#7
+
+*********23***Задание№1*********
+Когда пользователь вводит несколько слов в textarea, на странице
+revers.html должно появиться их количество.Страница должна иметь следующий вид:
+Original text has 2 words
+
+Hello World!
+
+Reversed Text
+
+!dlroW olleH
+
+********24***Решение***views.py*****
+def reverse(request):				#13
+  user_text = request.GET['usertext']		#14
+  world = user_text.split()			#15
+  number_of_words = len(words)			#16
+  reversed_text = user_text[::-1]		#17
+  return render(request, 'reverse.html', {usertext': user_text,		#18
+			 'reversedtext': reversed_text, 'number_of_words': number_of_words})	#19
+*******24*2***reverse.html********
+<h1>Original text has {{number_of_words}}words</h1>			#1
+					#2
+{{usertext}}				#3
+					#4
+<h1>Reversed Text</h1>			#5
+					#6
+{{reversedtext}}			#7
+
+**********25***Создать новый Django проект:Ваше Имя_2021.****
+В нём создать папку template/
+Этот проект будет Вашим портфолио для дальнейшей работы
+*************************************
+D:\DjangoProject\LARYSA SAUKOVA_2021
+D:\pythonProject\DjangoProject\LARYSA SAUKOVA_2021
+D:\pythonProject\.idea\DjangoProject\LARYSA SAUKOVA_2021
+D:\pythonProject\venv\DjangoProject\LARYSA SAUKOVA_2021
+D:\Novyi comp (na rabote)\DjangoProject\LARYSA SAUKOVA_2021
+*************************************
+*********26***На этом работа с первым проектом завершена.
+Поздравляю с первым самостоятельным проктом на Django!
+
+
+
+
+
+
+
+
+
+
+from django.http import HttpResponse
+from django.sportcuts import render
+
+def abount(request):
+return HttpResponse('This is about page')
+
+def home(request):
+return render(raquast,'home.html'),({'greeting':'Hello'})
+
+
+
+
+path('',views.home),
+
+Your_name
+textarea
+button
+<input type="submit"
+
+
+
+
+
+
+******************
+
+
+
+*******************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
